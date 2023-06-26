@@ -1,0 +1,67 @@
+---
+- hosts: localhost
+  become: yes
+  gather_facts: false
+
+  tasks:
+    - name: Delete Auto Scaling Group
+      ec2_asg:
+        region: "ap-northeast-2"
+        name: "SmithCluster-asg"
+        state: absent
+      when: ec2_asg.results.0 is defined
+
+    - name: Debug result
+      debug:
+        var: result
+
+    - name: Disassociate Elastic IP from Master Node
+      ec2_eip:
+        region: "ap-northeast-2"
+        instance_id: "{{ master_ec2_result.instances[0].id }}"
+		public_ip: "{{ master_eip_result.public_ip }}"
+        state: absent
+      when: master_eip_result.defined
+
+    - name: Release Elastic IP of Master Node
+      ec2_eip:
+        region: "ap-northeast-2"
+        instance_id: "{{ master_ec2_result.instances[0].id }}"
+        public_ip: "{{ master_eip_result.public_ip }}"
+      when: 
+
+    - name: Disassociate Elastic IP from Worker Node
+      ec2_eip:
+        region: "ap-northeast-2"
+        name: "Worker_EIP"
+        state: absent
+
+    - name: Release Elastic IP of Worker Node
+      ec2_eip:
+        region: "ap-northeast-2"
+        name: "worker EC2 (Worker)"
+        state: absent
+
+    - name: Terminate Master Node EC2 Instance
+      ec2_instance:
+        region: "ap-northeast-2"
+        name: "master EC2 (Master)"
+        state: absent
+
+    - name: Terminate Worker Node EC2 Instance
+      ec2_instance:
+        region: "ap-northeast-2"
+        name: "worker EC2 (Master)"
+        state: absent
+
+    - name: Delete VPC
+      ec2_vpc_net:
+        region: "ap-northeast-2"
+        name: "smith"
+        state: absent
+
+    - name: Delete EC2 Key Pair
+      ec2_key:
+        region: "ap-northeast-2"
+        state: absent
+        key_name: "smithkey"

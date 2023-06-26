@@ -1,0 +1,40 @@
+---
+- name: 배포 플레이북 예시
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: EC2 인스턴스 생성
+      ec2:
+        key_name: your_key_name
+        image: ami-xxxxxxxx
+        instance_type: t2.micro
+        region: us-west-2
+        count: 1
+        vpc_subnet_id: subnet-xxxxxxxx
+        assign_public_ip: true
+        group: your_security_group
+      register: ec2_instance
+
+    - name: 대기 상태 확인
+      wait_for:
+        host: "{{ ec2_instance.instances[0].public_ip }}"
+        port: 22
+        state: started
+        delay: 5
+        timeout: 300
+
+    - name: 애플리케이션 설치 및 설정
+      become: true
+      hosts: "{{ ec2_instance.instances[0].public_ip }}"
+      roles:
+        - your_application_role
+
+    - name: 서비스 시작
+      become: true
+      hosts: "{{ ec2_instance.instances[0].public_ip }}"
+      tasks:
+        - name: 애플리케이션 서비스 시작
+          service:
+            name: your_application_service
+            state: started
+            enabled: true
