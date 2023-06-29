@@ -1,0 +1,26 @@
+---
+# vars file for demo/role-create-ec2
+aws_access_key: "AKIAUF27JJWW7B3O367R"
+aws_secret_key: "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"
+vpc_cidr_block: "172.18.0.0/16"
+subnet_cidr_block_1: "172.18.1.0/24"
+subnet_cidr_block_2: "172.18.2.0/24"
+region: "ap-northeast-2"
+ami_id: "ami-0a0064415cdedc552"
+key_name: "smithkey"
+security_group_name: "smithSG1"
+security_group_description: "allow 22, 80, 443, icmp"
+vpc_name: "smith"
+ec2_asg_name: "SmithCluster-asg"
+
+ecs_cluster_name: 'SmithCluster'
+ecs_ssh_key_name: 'smithkey'
+ecs_security_groups: 'smithSG1'
+ecs_vpc_subnets: ["{{ subnet_result.subnet.id }}", "{{ subnet_result2.subnet.id }}"]
+ecs_asg_min_size: 2
+ecs_asg_max_size: 4
+ecs_asg_desired_capacity: 2
+ecs_ec2_tags:
+     Name: "smith web"
+     role: "ecs-cluster"
+ecs_ec2_region: ap-northeast-2
