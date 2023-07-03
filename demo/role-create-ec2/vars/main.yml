@@ -11,7 +11,7 @@ key_name: "DDACK_key"
 security_group_name: "DDACK_SG1"
 security_group_description: "allow 22, 80, 443, icmp"
 vpc_name: "DDACK"
-ec2_asg_name: "DDACKCluster-asg"
+ec2_asg_name: "DDACK_Cluster-asg"
 
 ecs_cluster_name: 'DDACK_Cluster'
 ecs_ssh_key_name: 'DDACK_key'
