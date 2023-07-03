@@ -10,7 +10,7 @@
     ecs_asg_max_size: 4
     ecs_asg_desired_capacity: 2
     ecs_ec2_tags:
-         Name: "DDACK web"
+         Name: "DDACK_web"
          role: "ecs-cluster"
     ecs_ec2_region: ap-northeast-2  
   roles:
@@ -20,9 +20,9 @@
   tasks:  
     - name: Create task definition for a service running in docker container(s)
       ecs_taskdefinition:
-        family: DDACK-family
+        family: DDACK_family
         containers:
-          - name: DDACK-app
+          - name: DDACK_app
             cpu: 256
             memory: 500
             image: seokkyung/web-nginx
@@ -33,7 +33,7 @@
 
     - name: Create service running on the ECS cluster
       ecs_service:
-        name: DDACK-service
+        name: DDACK_service
         cluster: "{{ ecs_cluster_name }}"
         task_definition: "{{ my_task_definition.taskdefinition.taskDefinitionArn }}"
         region: "{{ ecs_ec2_region }}"
