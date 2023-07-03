@@ -2,7 +2,7 @@
 - name: Setup EC2 cluster inside the VPC
   hosts: localhost
   vars:
-    ecs_cluster_name: 'DDACK_Cluster'
+    ecs_cluster_name: 'DDACKCluster'
     ecs_ssh_key_name: 'DDACK_key'
     ecs_security_groups: 'DDACK_SG1'
     ecs_vpc_subnets: ["{{ subnet_result.subnet.id }}", "{{ subnet_result2.subnet.id }}"]
