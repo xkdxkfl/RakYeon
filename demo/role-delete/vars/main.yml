@@ -1,0 +1,14 @@
+---
+# vars file for demo/role-delete
+aws_access_key: "Your aws_access_key"
+aws_secret_key: "Your aws_secret_key"
+vpc_cidr_block: "172.18.0.0/16"
+subnet_cidr_block_1: "172.18.1.0/24"
+subnet_cidr_block_2: "172.18.2.0/24"
+region: "ap-northeast-2"
+ami_id: "ami-0a0064415cdedc552"
+key_name: "Ddackkey"
+security_group_name: "DdackSG1"
+security_group_description: "allow 22, 80, 443, icmp"
+vpc_name: "DdackVPC"
+ec2_asg_name: "DdackCluster-asg"

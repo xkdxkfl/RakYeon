@@ -1,0 +1,187 @@
+---
+# tasks file for role-create-ec2
+
+    - name: Create VPC
+      ec2_vpc_net:
+        name: DdackVPC
+        cidr_block: "{{ vpc_cidr_block }}"
+        region: "{{ region }}"
+        state: present
+      register: vpc_result
+
+    - name: Create Internet Gateway
+      ec2_vpc_igw:
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        region: "{{ region }}"
+        state: present
+        tags:
+          Name: Ddack_igw
+      register: igw_result
+
+    - name: Create Subnet1
+      ec2_vpc_subnet:
+        cidr: "{{ subnet_cidr_block_1 }}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        region: "{{ region }}"
+        az: "{{ region }}a"
+        map_public: yes
+        state: present
+      register: subnet_result
+
+    - name: Create Subnet2
+      ec2_vpc_subnet:
+        cidr: "{{ subnet_cidr_block_2 }}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        region: "{{ region }}"
+        az: "{{ region }}c"
+        map_public: yes
+        state: present
+      register: subnet_result2
+
+    - name: Create Routing Table
+      ec2_vpc_route_table:
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        region: "{{ region }}"
+        state: present
+        subnets:
+          - "{{ subnet_result.subnet.id }}"
+          - "{{ subnet_result2.subnet.id }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ igw_result.gateway_id }}"
+
+    - name: Create Security Group
+      ec2_group:
+        name: "{{ security_group_name }}"
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        region: "{{ region }}"
+        state: present
+        description: "{{ security_group_description }}"
+        tags:
+          Name: "{{ security_group_name }}"
+        rules:
+          - proto: tcp
+            ports:
+              - 22
+              - 80
+              - 443
+            cidr_ip: 0.0.0.0/0
+          - proto: icmp
+            from_port: -1
+            to_port: -1
+            cidr_ip: 0.0.0.0/0
+
+    - name: Create test EC2 key
+      ec2_key:
+        name: "{{ key_name }}"
+        region: "{{ region }}"
+      register: key_result
+
+    - name: Save Private Key
+      copy:
+        content: "{{ key_result.key.private_key }}"
+        dest: /root/.ssh/Ddackkey.pem
+        mode: 0400
+      when: key_result.changed
+
+    - name: Create Master EC2 (Master Node)
+      ec2:
+        key_name: "{{ key_name }}"
+        instance_tags:
+          Name: master EC2 (Master)
+        region: "{{ region }}"
+        instance_type: t3.micro
+        image: "{{ ami_id }}"
+        group: "{{ security_group_name }}"
+        wait: yes
+        count: 1
+        vpc_subnet_id: "{{ subnet_result.subnet.id }}"
+        assign_public_ip: yes
+      register: master_ec2_result
+
+    - name: Create Worker EC2 (Worker Node)
+      ec2:
+        key_name: "{{ key_name }}"
+        instance_tags:
+          Name: worker EC2 (Worker)
+        region: "{{ region }}"
+        instance_type: t3.micro
+        image: "{{ ami_id }}"
+        group: "{{ security_group_name }}"
+        wait: yes
+        count: 1
+        vpc_subnet_id: "{{ subnet_result2.subnet.id }}"
+        assign_public_ip: yes
+      register: worker_ec2_result
+
+    - name: Allocate Elastic IP for Master Node
+      ec2_eip:
+        region: "{{ region }}"
+        state: present
+        instance_id: "{{ master_ec2_result.instances[0].id }}"
+        in_vpc: yes
+        tags:
+          Name: Master_EIP
+      register: master_eip_result
+
+    - name: Associate Elastic IP with Master Node
+      ec2_eip:
+        region: "{{ region }}"
+        state: present
+        instance_id: "{{ master_ec2_result.instances[0].id }}"
+        public_ip: "{{ master_eip_result.public_ip }}"
+      when: master_eip_result.changed
+
+    - name: Allocate Elastic IP for Worker Node
+      ec2_eip:
+        region: "{{ region }}"
+        state: present
+        instance_id: "{{ worker_ec2_result.instances[0].id }}"
+        in_vpc: yes
+        tags:
+          Name: Worker_EIP
+      register: worker_eip_result
+
+    - name: Associate Elastic IP with Worker Node
+      ec2_eip:
+        region: "{{ region }}"
+        state: present
+        instance_id: "{{ worker_ec2_result.instances[0].id }}"
+        public_ip: "{{ worker_eip_result.public_ip }}"
+      when: worker_eip_result.changed
+
+    - name: Display Master Node IP
+      debug:
+        msg: "Master Node IP: {{ master_ec2_result.instances[0].public_ip }}"
+
+    - name: Display Worker Node IP
+      debug:
+        msg: "Worker Node IP: {{ worker_ec2_result.instances[0].public_ip }}"
+
+    - name: Add Worker Node to Security Group
+      ec2_group:
+        name: "{{ security_group_name }}"
+        region: "{{ region }}"
+        description: "{{ security_group_description }}"
+        rules:
+          - proto: tcp
+            ports:
+              - 22
+              - 80
+              - 443
+            cidr_ip: 0.0.0.0/0
+          - proto: icmp
+            from_port: -1
+            to_port: -1
+            cidr_ip: 0.0.0.0/0
+
+    - name: Write Inventory File
+      copy:
+        content: |
+          [master]
+          {{ master_ec2_result.instances[0].public_ip }}
+
+          [worker]
+          {{ worker_ec2_result.instances[0].public_ip }}
+        dest: /root/Project902/demo/ansible_inventory.txt
+

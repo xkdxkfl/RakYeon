@@ -1,0 +1,31 @@
+---
+# tasks file for demo/role-delete
+    - name: Delete Auto Scaling Group
+      ec2_asg: 
+        region: "{{ region }}"
+        name: "{{ ec2_asg_name }}"
+        state: absent
+
+    - name: Terminate All EC2 Instances
+      ec2_instance:
+        region: "{{ region }}"
+        state: absent
+        filters:
+          instance-state-name: running
+
+    - name: Delete Security Group
+      ec2_group:
+        region: "{{ region }}"
+        name: "{{ security_group_name }}"
+        state: absent
+
+    - name: Delete Key Pair
+      ec2_key:
+        name: "{{ key_name }}"
+        region: "{{ region }}"
+        state: absent
+
+    - name: Delete Key File
+      file:
+        path: /root/.ssh/Ddackkey.pem
+        state: absent
