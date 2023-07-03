@@ -2,7 +2,7 @@
   fail: msg="You must specify the name of the ECS cluster, e.g. my-cluster"
   when: ecs_cluster_name is undefined
   vars:
-    ecs_cluster_name: "DDACK_Cluster"
+    ecs_cluster_name: "DDACKCluster"
 
 - name: "AWS | ECS | Check EC2 SSH key has been defined"
   fail: msg="You must specify the name of the SSH key you want to assign to the EC2 instances, e.g. my-ssh-key"
