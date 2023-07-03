@@ -8,7 +8,7 @@ ecs_instance_type: "t2.medium"
 ecs_ec2_region: us-east-1
 
 # EC2 image that contains a Docker server + ECS Agent, AWS provides a suitable default
-ecs_ami_id: "ami-a7a242da"
+ecs_ami_id: "ami-0a0064415cdedc552"
 
 # IAM role that will be used to call the AWS ECS API.  This is normally created when you create a default cluster through the AWS console
 ecs_instance_iam_role: "ecs_instance_role"
