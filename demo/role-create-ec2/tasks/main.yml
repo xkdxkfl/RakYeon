@@ -3,7 +3,7 @@
 
     - name: Create VPC
       ec2_vpc_net:
-        name: smith
+        name: DDACK
         cidr_block: "{{ vpc_cidr_block }}"
         region: "{{ region }}"
         state: present
@@ -15,7 +15,7 @@
         region: "{{ region }}"
         state: present
         tags:
-          Name: smith_igw
+          Name: DDACK_igw
       register: igw_result
 
     - name: Create Subnet1
@@ -184,4 +184,3 @@
           [worker]
           {{ worker_ec2_result.instances[0].public_ip }}
         dest: /root/demo/ansible_inventory.txt
-
