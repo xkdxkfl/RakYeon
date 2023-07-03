@@ -80,7 +80,7 @@
     - name: Save Private Key
       copy:
         content: "{{ key_result.key.private_key }}"
-        dest: /root/.ssh/smithkey.pem
+        dest: /root/.ssh/DDACK_key.pem
         mode: 0400
       when: key_result.changed
 
@@ -183,4 +183,4 @@
 
           [worker]
           {{ worker_ec2_result.instances[0].public_ip }}
-        dest: /root/demo/ansible_inventory.txt
+        dest: /root/ansible_inventory.txt
