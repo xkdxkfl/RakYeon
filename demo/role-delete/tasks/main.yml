@@ -27,5 +27,5 @@
 
     - name: Delete Key File
       file:
-        path: /root/.ssh/smithkey.pem
+        path: /root/.ssh/DDACK_key.pem
         state: absent
